@@ -17,16 +17,17 @@ class Agent:
         ]
 
         return hard_coded_moves[game.counter]
-        # raise NotImplementedError()
-        # return {"old": "a", "new": "b"}
 
 
 class Game:
     def __init__(self, agents=[], num=3, catch_exceptions=True, rules=[]):
         self.num = num
-        self.a = [i for i in range(num, 0, -1)]
-        self.b = []
-        self.c = []
+        self.state = {
+            "a": [i for i in range(num, 0, -1)],
+            "b": [],
+            "c": []
+        }
+
 
         self.agents = agents
         self.gameOver = False
@@ -37,27 +38,30 @@ class Game:
         self.counter = 0
 
     def get_state(self):
-        return self.a, self.b, self.c
+        return self.state
 
     def display_state(self):
-        print(f"\t a: {self.a}")
-        print(f"\t b: {self.b}")
-        print(f"\t c: {self.c}")
+        print(f"\t a: {self.state['a']}")
+        print(f"\t b: {self.state['b']}")
+        print(f"\t c: {self.state['c']}")
         print("----------------------------------------")
 
-    def check_attribute_is_valid(self, att):
+    def check_attribute_is_valid(self, att: str):
         existing = self.__dir__()
-        if not hasattr(self, att):
-            raise AttributeError(f"object '{self.__class__.__name__}' has no attribute '{att}'")
+        state = getattr(self, "state")
+        if att not in state.keys():
+            raise KeyError(f"state of object '{self.__class__.__name__}' has no key: '{att}'")
 
     def remove_disk(self, old):
-        values = getattr(self, old)
+        state = getattr(self, "state")
+        values = state[old]
         moving_disk = values.pop()
         setattr(self, old, values)
         return moving_disk
 
     def add_disk(self, new, moving_disk):
-        values = getattr(self, new)
+        state = getattr(self, "state")
+        values = state[new]
         values.append(moving_disk)
         setattr(self, new, values)
 
@@ -71,7 +75,8 @@ class Game:
 
     def check_legal_move(self, disk, action):
         old, new = action
-        disk_on_new_location = getattr(self, new)
+        state = getattr(self, "state")
+        disk_on_new_location = state[new]
 
         if len(disk_on_new_location) > 0 and disk > disk_on_new_location[-1]:
             self.display_state()
@@ -116,8 +121,8 @@ class Game:
 
 
     def check_end_state(self):
-        pole_c = getattr(self, "c")
-        if len(pole_c) == self.num:
+        state = getattr(self, "state")
+        if len(state["c"]) == self.num:
             self.result = True
             self.gameOver = True
 

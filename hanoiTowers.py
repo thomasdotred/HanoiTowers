@@ -1,22 +1,8 @@
 import argparse
 import os
 import sys
+import pdb
 from game import Game
-from hanoiAgents import startFinishAgent, hardCodedAdent3, KeyboardAgent
-
-
-# Code for loading agents from blahAgents.py module
-
-# def loadAgent(agent):
-#     # TODO change to individual files for agents
-#     agent_module = __import__("hanoiAgents")
-#     avalible_agents = agent_module.__dict__.keys()
-#
-#     if agent not in list(avalible_agents):
-#         raise ImportError(f"agent '{agent}' does not exist in agents module")
-#     else:
-#
-#         return getattr(agent_module, agent)
 
 def loadAgent(pacman):
     # Looks through all pythonPath Directories for the right module,
@@ -37,24 +23,23 @@ def loadAgent(pacman):
                 continue
             if pacman in dir(module):
                 return getattr(module, pacman)
-    raise Exception('The agent ' + pacman + ' is not specified in any *Agents.py.')
-
-
+    raise Exception(f'The agent {pacman} is not specified in any *Agents.py.')
 
 
 def getArgs(args):
     ap = argparse.ArgumentParser()
     ap.add_argument(
-        "-a",
-        "--agents",
-        default="hardCodedAdent3",
-        help="Agent to run control game"
-    ),
-    ap.add_argument(
         "-n",
         "--num",
-        default=3,
+        required=True,
+        type=int,
         help="number of disks in game"
+    ),
+    ap.add_argument(
+        "-a",
+        "--agents",
+        default="KeyboardAgent",
+        help="Agent to run control game"
     )
     ap.add_argument(
         "-c",
@@ -68,6 +53,7 @@ def getArgs(args):
         default=[],
         help="rules for game"
     )
+
     return vars(ap.parse_args(args=args))
 
 
@@ -83,7 +69,7 @@ def main(args):
 
     agent = loadAgent(args["agents"])
     g1 = Game(
-        agents=agent,
+        agents=[agent],
         num=args["num"],
         catch_exceptions=args["catch_exceptions"],
         rules=args["rules"]

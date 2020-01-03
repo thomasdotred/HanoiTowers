@@ -31,6 +31,7 @@ class Game:
         return self.state
 
     def display_state(self):
+        print(self.counter)
         print(f"\t a: {self.state['a']}")
         print(f"\t b: {self.state['b']}")
         print(f"\t c: {self.state['c']}")
@@ -45,7 +46,12 @@ class Game:
     def remove_disk(self, old):
         state = getattr(self, "state")
         values = state[old]
-        moving_disk = values.pop()
+        if len(values) > 0:
+            moving_disk = values.pop()
+        else:
+            self.gameOver = True
+            raise ValueError(f"No items left on stack {old}, skipping this action")
+            
         setattr(self, old, values)
         return moving_disk
 
@@ -57,13 +63,15 @@ class Game:
 
     def move_disk(self, action: tuple, display_state=True):
         old, new = action
-        disk = self.remove_disk(old)
-        if self.check_legal_move(disk, action):
-            self.add_disk(new, disk)
-            if display_state:
-                self.display_state()
+        if len(self.state[action[0]]) > 0:    
+            disk = self.remove_disk(old)
+            if self.check_legal_move(disk, action): 
+                self.add_disk(new, disk)
+                if display_state:
+                    self.display_state()
+            else:
+                self.gameOver = True
         else:
-            self.add_disk(old, disk)
             self.gameOver = True
 
     def check_legal_move(self, disk, action):
@@ -101,14 +109,14 @@ class Game:
             action = self.agents[0].getAction(self)
 
             # execute the action
-
             self.move_disk(action)
             self.moveHistory.append(action)
 
             # check for end state
-            self.counter = self.counter + 1
             self.check_end_state()
+            self.counter +=1
             time.sleep(0.1)
+
         # end game results
         self.display_state()
 

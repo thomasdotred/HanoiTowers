@@ -1,12 +1,24 @@
+import argparse
 import os
-
+import sys
 from game import Game
-# from first_attempt.hanoiAgents import TowerAgent
+from hanoiAgents import startFinishAgent, hardCodedAdent3, KeyboardAgent
 
-'''
+
 # Code for loading agents from blahAgents.py module
 
-def loadAgent(pacman, nographics):
+# def loadAgent(agent):
+#     # TODO change to individual files for agents
+#     agent_module = __import__("hanoiAgents")
+#     avalible_agents = agent_module.__dict__.keys()
+#
+#     if agent not in list(avalible_agents):
+#         raise ImportError(f"agent '{agent}' does not exist in agents module")
+#     else:
+#
+#         return getattr(agent_module, agent)
+
+def loadAgent(pacman):
     # Looks through all pythonPath Directories for the right module,
     pythonPathStr = os.path.expandvars("$PYTHONPATH")
     if pythonPathStr.find(';') == -1:
@@ -24,29 +36,61 @@ def loadAgent(pacman, nographics):
             except ImportError:
                 continue
             if pacman in dir(module):
-                if nographics and modulename == 'keyboardAgents.py':
-                    raise Exception('Using the keyboard requires graphics (not text display)')
                 return getattr(module, pacman)
-#     raise Exception('The agent ' + pacman + ' is not specified in any *Agents.py.')
-'''
+    raise Exception('The agent ' + pacman + ' is not specified in any *Agents.py.')
 
-def main():
+
+
+
+def getArgs(args):
+    ap = argparse.ArgumentParser()
+    ap.add_argument(
+        "-a",
+        "--agents",
+        default="hardCodedAdent3",
+        help="Agent to run control game"
+    ),
+    ap.add_argument(
+        "-n",
+        "--num",
+        default=3,
+        help="number of disks in game"
+    )
+    ap.add_argument(
+        "-c",
+        "--catch_exceptions",
+        default=True,
+        help="catch exceptions"
+    )
+    ap.add_argument(
+        "-r",
+        "--rules",
+        default=[],
+        help="rules for game"
+    )
+    return vars(ap.parse_args(args=args))
+
+
+def main(args):
     print("setting up game")
-    g1 = Game(3)
+    args = getArgs(sys.argv[1:])
+    # args = {
+    #     "num": 3,
+    #     "agents": [KeyboardAgent()],
+    #     "catch_exceptions": True,
+    #     "rules": []
+    # }
+
+    agent = loadAgent(args["agents"])
+    g1 = Game(
+        agents=agent,
+        num=args["num"],
+        catch_exceptions=args["catch_exceptions"],
+        rules=args["rules"]
+    )
     g1.display_state()
-
-
-
     g1.run()
 
-    # Winning strat
-    # g1.move_disk(("a", "c"), True)
-    # g1.move_disk(("a", "b"), True)
-    # g1.move_disk(("c", "b"), True)
-    # g1.move_disk(("a", "c"), True)
-    # g1.move_disk(("b", "a"), True)
-    # g1.move_disk(("b", "c"), True)
-    # g1.move_disk(("a", "c"), True)
 
 if __name__ == "__main__":
-    main()
+    main(sys.argv)

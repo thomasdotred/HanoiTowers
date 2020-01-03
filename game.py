@@ -1,22 +1,12 @@
 import time
 
-
 class Agent:
     """
     An agent must define a getAction method
     """
     def getAction(self, game):
-        hard_coded_moves =[
-            ("a", "c"),
-            ("a", "b"),
-            ("c", "b"),
-            ("a", "c"),
-            ("b", "a"),
-            ("b", "c"),
-            ("a", "c")
-        ]
+        raise NotImplementedError("getAction() not implemented")
 
-        return hard_coded_moves[game.counter]
 
 
 class Game:
@@ -68,10 +58,13 @@ class Game:
     def move_disk(self, action: tuple, display_state=True):
         old, new = action
         disk = self.remove_disk(old)
-        self.check_legal_move(disk, action)
-        self.add_disk(new, disk)
-        if display_state:
-            self.display_state()
+        if self.check_legal_move(disk, action):
+            self.add_disk(new, disk)
+            if display_state:
+                self.display_state()
+        else:
+            self.add_disk(old, disk)
+            self.gameOver = True
 
     def check_legal_move(self, disk, action):
         old, new = action
@@ -80,7 +73,9 @@ class Game:
 
         if len(disk_on_new_location) > 0 and disk > disk_on_new_location[-1]:
             self.display_state()
-            raise Warning(f"invalid move: Can't put a disk on one what is smaller.\nattempted move: {disk} onto stack of [{disk_on_new_location[-1]}]")
+            print(f"warning, invalid move: Can't put a disk on one that is smaller.\nattempted move: {disk} onto stack of {disk_on_new_location}")
+            return False
+        return True
 
 
         # if len(getattr(self, old)) == 0:
@@ -90,7 +85,7 @@ class Game:
         self.counter = 0
         while not self.gameOver:
 
-            agent = self.agents
+            agent = [self.agents]
             move_time = 0
 
             # observe state of game
@@ -102,12 +97,13 @@ class Game:
 
 
             # get action
-            self.agents = Agent()
-            action = self.agents.getAction(self)
+            # self.agents = Agent()
+            action = self.agents[0].getAction(self)
 
             # execute the action
-            self.moveHistory.append(action)
+
             self.move_disk(action)
+            self.moveHistory.append(action)
 
             # check for end state
             self.counter = self.counter + 1
